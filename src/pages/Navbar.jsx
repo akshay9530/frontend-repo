@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiSearch, FiShoppingCart, FiChevronDown, FiX, FiMenu, FiUser } from 'react-icons/fi'
-import { IoManSharp, IoWoman } from 'react-icons/io5'
+import { FiSearch, FiShoppingCart, FiChevronDown, FiX, FiMenu, FiUser, FiMonitor, FiSmartphone, FiHeadphones } from 'react-icons/fi'
+import { IoManSharp, IoWoman, IoTv, IoPhonePortrait } from 'react-icons/io5'
 import { useCart } from '../hooks/useCart'
 
 const Navbar = () => {
@@ -142,9 +142,9 @@ const Navbar = () => {
       name: 'Electronics',
       type: 'dropdown',
       items: [
-        { name: 'TV', icon: <FiX className="w-4 h-4" />, href: '/electronics/tv' },
-        { name: 'Smartphone', icon: <FiX className="w-4 h-4" />, href: '/electronics/smartphone' },
-        { name: 'Earbuds', icon: <FiX className="w-4 h-4" />, href: '/electronics/earbuds' }
+        { name: 'TV', icon: <IoTv className="w-4 h-4" />, href: '/electronics/tv' },
+        { name: 'Smartphone', icon: <IoPhonePortrait className="w-4 h-4" />, href: '/electronics/smartphone' },
+        { name: 'Earbuds', icon: <FiHeadphones className="w-4 h-4" />, href: '/electronics/earbuds' }
       ]
     },
     {
@@ -418,7 +418,7 @@ const Navbar = () => {
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center space-x-2 xs:space-x-3">
+            <div className="flex items-center space-x no-wrap">
               {/* Desktop Search - Hidden on mobile when search is open */}
               <div className="hidden lg:block">
                 <button
@@ -438,6 +438,20 @@ const Navbar = () => {
               >
                 <FiSearch className="w-5 h-5" />
               </button>
+
+              {/* Cart Icon */}
+              <Link
+                to="/cart"
+                className="text-gray-600 hover:text-green-600 p-1.5 xs:p-2 rounded-full hover:bg-green-50 transition-colors relative"
+                aria-label="Cart"
+              >
+                <FiShoppingCart className="w-5 h-5" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    {itemCount > 9 ? '9+' : itemCount}
+                  </span>
+                )}
+              </Link>
 
               {/* User Account - Desktop */}
               <Link
