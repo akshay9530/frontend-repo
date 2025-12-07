@@ -29,7 +29,8 @@ const ProductDetailPage = ({
   updateQuantity = () => {},
   removeFromCart = () => {},
   formatPrice = (price) => price,
-  getCartSummary = () => ({ formatted: { total: 0, shipping: 0, totalWithShipping: 0 } })
+  getCartSummary = () => ({ formatted: { total: 0, shipping: 0, totalWithShipping: 0 } }),
+  onNavigateToCheckout // ADD THIS: New prop for checkout navigation
 }) => {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -169,11 +170,21 @@ const ProductDetailPage = ({
       size: selectedSize,
       storage: selectedStorage,
       colour: selectedColor,
-      quantity: quantity, // Include the current quantity state
+      quantity: quantity,
       selectedPrice: productDetails.price
     };
     
-    await onBuyNow(productWithSelection);
+    // Call the existing onBuyNow handler first
+    if (onBuyNow) {
+      await onBuyNow(productWithSelection);
+    }
+    
+    // FIX: Always navigate to checkout page after Buy Now
+    // This ensures redirection happens regardless of what onBuyNow does
+    if (onNavigateToCheckout) {
+      onNavigateToCheckout([productWithSelection]); // Pass as array for consistency
+    }
+    
     setIsBuyingNow(false);
   };
 
@@ -341,7 +352,10 @@ const ProductDetailPage = ({
                   <button
                     onClick={() => {
                       setIsCartOpen(false);
-                      // You might want to add navigation to checkout here
+                      // Navigate to checkout with cart items
+                      if (onNavigateToCheckout) {
+                        onNavigateToCheckout(cart);
+                      }
                     }}
                     className="w-full bg-green-600 hover:bg-green-700 text-white py-3 sm:py-4 rounded-lg font-semibold transition-colors shadow-lg hover:shadow-xl text-sm sm:text-base"
                   >

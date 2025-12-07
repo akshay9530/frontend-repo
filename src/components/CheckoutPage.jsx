@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { 
   FiArrowLeft, 
   FiCheck, 
@@ -65,7 +65,7 @@ const CheckoutPage = ({
   onUpdateQuantity, 
   onRemoveItem, 
   onTrackOrder,
-  cart = [] // ADD THIS: Receive cart from parent component
+  cart = []
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -96,6 +96,10 @@ const CheckoutPage = ({
     onConfirm: () => {},
     onCancel: () => {}
   });
+
+  // Use refs to track previous values and prevent infinite loops
+  const prevCartRef = useRef([]);
+  const prevLocationStateRef = useRef(null);
   
   // Storage keys
   const STORAGE_KEYS = {
@@ -142,63 +146,59 @@ const CheckoutPage = ({
   });
 
   // Show Confirmation Modal
-  const showConfirmation = (config) => {
+  const showConfirmation = useCallback((config) => {
     setConfirmModalConfig(config);
     setShowConfirmModal(true);
-  };
+  }, []);
 
   // Hide Confirmation Modal
-  const hideConfirmation = () => {
+  const hideConfirmation = useCallback(() => {
     setShowConfirmModal(false);
-  };
+  }, []);
 
-  // Load saved data on component mount - FIXED VERSION
+  // Load saved data on component mount - FIXED: Removed infinite loop
   useEffect(() => {
     const loadSavedData = async () => {
       try {
         console.log('CheckoutPage - Loading data...');
-        console.log('Location state:', location.state);
-        console.log('Cart prop:', cart);
-        console.log('Prop products:', propProducts);
 
-        // CRITICAL FIX: ALWAYS prioritize location.state for Buy Now flow
+        // CRITICAL FIX: Load products with priority
+        let productsToSet = [];
+        
+        // 1. Check location state (Buy Now flow)
         if (location.state && location.state.products) {
-          console.log('Found products in location.state:', location.state.products);
+          console.log('Found products in location.state');
           const locationProducts = Array.isArray(location.state.products) 
             ? location.state.products 
             : [location.state.products];
           
-          // Ensure quantity is preserved from location state
-          const productsWithQuantity = locationProducts.map(product => ({
+          productsToSet = locationProducts.map(product => ({
             ...product,
-            quantity: product.quantity || 1  // Default to 1 if quantity not specified
+            quantity: product.quantity || 1
           }));
-          
-          console.log('Setting products from location.state:', productsWithQuantity);
-          setProducts(productsWithQuantity);
-          localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(productsWithQuantity));
         }
-        // FIX: Check if cart prop is provided and use it as primary source for cart flow
+        // 2. Check cart prop (Cart checkout flow)
         else if (cart && cart.length > 0) {
-          console.log('Using cart from props (Cart checkout flow):', cart);
-          setProducts(cart);
-          localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(cart));
+          console.log('Using cart from props');
+          productsToSet = cart;
         }
-        // Then, use the products passed as props (from NewArrivals component)
+        // 3. Check propProducts (Direct props)
         else if (propProducts && propProducts.length > 0) {
-          console.log('Using products from props:', propProducts);
-          const productsArray = Array.isArray(propProducts) ? propProducts : [propProducts];
-          setProducts(productsArray);
-          localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(productsArray));
+          console.log('Using products from props');
+          productsToSet = Array.isArray(propProducts) ? propProducts : [propProducts];
         }
+        // 4. Check localStorage
         else {
-          // If no products in any source, try to load from localStorage
           const savedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
           if (savedProducts) {
             const parsedProducts = JSON.parse(savedProducts);
-            console.log('Using products from localStorage:', parsedProducts);
-            setProducts(Array.isArray(parsedProducts) ? parsedProducts : [parsedProducts]);
+            productsToSet = Array.isArray(parsedProducts) ? parsedProducts : [parsedProducts];
           }
+        }
+
+        if (productsToSet.length > 0) {
+          setProducts(productsToSet);
+          localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(productsToSet));
         }
 
         // Load shipping addresses
@@ -231,49 +231,47 @@ const CheckoutPage = ({
 
     setIsLoading(true);
     loadSavedData();
-  }, [propProducts, location.state, cart]); // ADD cart to dependencies
+  }, []); // Empty dependency array - only run once on mount
 
-  // FIX: Ensure products state updates when cart or location.state changes
+  // FIXED: Sync products from cart or location.state without infinite loop
   useEffect(() => {
-    console.log('Effect running - location.state:', location.state);
-    console.log('Current products:', products);
+    // Skip if no changes
+    const currentCartString = JSON.stringify(cart);
+    const prevCartString = JSON.stringify(prevCartRef.current);
+    const currentLocationState = location.state ? JSON.stringify(location.state) : null;
+    const prevLocationState = prevLocationStateRef.current;
     
-    // Check if location.state has products (for Buy Now flow)
-    if (location.state && location.state.products) {
+    let shouldUpdate = false;
+    let newProducts = [...products];
+    
+    // Check if cart changed
+    if (currentCartString !== prevCartString && cart.length > 0) {
+      console.log('Cart changed, updating products');
+      newProducts = cart;
+      shouldUpdate = true;
+      prevCartRef.current = [...cart];
+    }
+    
+    // Check if location.state changed (Buy Now flow)
+    if (currentLocationState !== prevLocationState && location.state?.products) {
+      console.log('Location state changed, updating products');
       const locationProducts = Array.isArray(location.state.products) 
         ? location.state.products 
         : [location.state.products];
       
-      // Ensure quantity is preserved
-      const productsWithQuantity = locationProducts.map(product => ({
+      newProducts = locationProducts.map(product => ({
         ...product,
         quantity: product.quantity || 1
       }));
-      
-      // Only update if products are different
-      const currentProductsString = JSON.stringify(products);
-      const newProductsString = JSON.stringify(productsWithQuantity);
-      
-      if (currentProductsString !== newProductsString) {
-        console.log('Updating products from location.state:', productsWithQuantity);
-        console.log('Current products:', products);
-        console.log('New products:', productsWithQuantity);
-        setProducts(productsWithQuantity);
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(productsWithQuantity));
-      }
+      shouldUpdate = true;
+      prevLocationStateRef.current = currentLocationState;
     }
-    // Check if cart prop has changed (for Cart checkout flow)
-    else if (cart && cart.length > 0) {
-      const cartString = JSON.stringify(cart);
-      const productsString = JSON.stringify(products);
-      
-      if (cartString !== productsString) {
-        console.log('Cart updated, syncing products:', cart);
-        setProducts(cart);
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(cart));
-      }
+    
+    if (shouldUpdate) {
+      setProducts(newProducts);
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(newProducts));
     }
-  }, [location.state, cart, products]);
+  }, [cart, location.state, products]); // Add products to dependencies but guard with refs
 
   // Save data to localStorage whenever it changes
   useEffect(() => {
@@ -315,8 +313,8 @@ const CheckoutPage = ({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges, orderComplete]);
 
-  // Validate form field on change
-  const validateFormField = (name, value) => {
+  // Validate form field on change - FIXED: Optimized validation
+  const validateFormField = useCallback((name, value) => {
     let error = '';
     
     switch (name) {
@@ -358,19 +356,19 @@ const CheckoutPage = ({
     }
     
     return error;
-  };
+  }, []);
 
-  // Validate payment field on change
-  const validatePaymentField = (name, value) => {
+  // Validate payment field on change - FIXED: Optimized validation
+  const validatePaymentField = useCallback((name, value) => {
     let error = '';
     
     switch (name) {
       case 'cardNumber':
-        { const cardDigits = value.replace(/\s/g, '').replace(/\D/g, '');
+        const cardDigits = value.replace(/\s/g, '').replace(/\D/g, '');
         if (!cardDigits) error = 'Card number is required';
         else if (cardDigits.length !== 16) error = '16 digits required';
         else if (!/^\d{16}$/.test(cardDigits)) error = 'Invalid card number';
-        break; }
+        break;
       
       case 'expiryDate':
         if (!value.trim()) error = 'Expiry date is required';
@@ -408,22 +406,24 @@ const CheckoutPage = ({
     }
     
     return error;
-  };
+  }, []);
 
-  // Handle form input change with validation
-  const handleFormChange = (name, value) => {
+  // Handle form input change with validation - FIXED: Debounced validation
+  const handleFormChange = useCallback((name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Validate the field
-    const error = validateFormField(name, value);
-    setFormErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-  };
+    // Validate the field with debounce
+    setTimeout(() => {
+      const error = validateFormField(name, value);
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: error
+      }));
+    }, 300);
+  }, [validateFormField]);
 
-  // Handle payment input change with validation
-  const handlePaymentChange = (name, value) => {
+  // Handle payment input change with validation - FIXED: Debounced validation
+  const handlePaymentChange = useCallback((name, value) => {
     // Format card number with spaces
     if (name === 'cardNumber') {
       const formatted = value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
@@ -440,15 +440,17 @@ const CheckoutPage = ({
     
     setPaymentData(prev => ({ ...prev, [name]: value }));
     
-    // Validate the field
-    const error = validatePaymentField(name, value);
-    setPaymentErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-  };
+    // Validate the field with debounce
+    setTimeout(() => {
+      const error = validatePaymentField(name, value);
+      setPaymentErrors(prev => ({
+        ...prev,
+        [name]: error
+      }));
+    }, 300);
+  }, [validatePaymentField]);
 
-  // Check if step 1 is valid
+  // Check if step 1 is valid - FIXED: Optimized validation
   const isStep1Valid = useMemo(() => {
     if (isAddingAddress || shippingAddresses.length === 0) {
       const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'zipCode'];
@@ -460,14 +462,14 @@ const CheckoutPage = ({
     } else {
       return selectedAddressId !== null;
     }
-  }, [formData, isAddingAddress, shippingAddresses.length, selectedAddressId]);
+  }, [formData, isAddingAddress, shippingAddresses.length, selectedAddressId, validateFormField]);
 
-  // Check if step 2 is valid (always valid since we have default shipping method)
+  // Check if step 2 is valid
   const isStep2Valid = useMemo(() => {
     return shippingMethod && SHIPPING_CONFIG[shippingMethod];
   }, [shippingMethod]);
 
-  // Check if step 3 is valid
+  // Check if step 3 is valid - FIXED: Optimized validation
   const isStep3Valid = useMemo(() => {
     if (paymentMethod === 'credit-card') {
       const requiredFields = ['cardNumber', 'expiryDate', 'cvv', 'nameOnCard'];
@@ -480,23 +482,17 @@ const CheckoutPage = ({
       return validatePaymentField('upiId', paymentData.upiId) === '';
     }
     return false;
-  }, [paymentMethod, paymentData]);
+  }, [paymentMethod, paymentData, validatePaymentField]);
 
-  // Check if current step is valid
+  // Check if current step is valid - FIXED: Simplified
   const isCurrentStepValid = useMemo(() => {
-    switch (step) {
-      case 1:
-        return isStep1Valid;
-      case 2:
-        return isStep2Valid;
-      case 3:
-        return isStep3Valid;
-      default:
-        return false;
-    }
+    if (step === 1) return isStep1Valid;
+    if (step === 2) return isStep2Valid;
+    if (step === 3) return isStep3Valid;
+    return false;
   }, [step, isStep1Valid, isStep2Valid, isStep3Valid]);
 
-  // Validate entire form for submission
+  // Validate entire form for submission - FIXED: Removed recursive showConfirmation
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
@@ -532,30 +528,18 @@ const CheckoutPage = ({
     setFormErrors(newErrors);
     setPaymentErrors(newErrors);
 
-    if (!isValid) {
-      showConfirmation({
-        title: 'Form Validation Error',
-        message: 'Please fix all errors before proceeding.',
-        confirmText: 'OK',
-        cancelText: 'Cancel',
-        onConfirm: hideConfirmation,
-        onCancel: hideConfirmation
-      });
-      return false;
-    }
-
-    return true;
+    return isValid;
   };
 
   // Price formatter
-  const formatPrice = (price) => {
+  const formatPrice = useCallback((price) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(price);
-  };
+  }, []);
 
   // Calculate delivery date
   const calculateDeliveryDate = useCallback((shippingDays) => {
@@ -573,14 +557,10 @@ const CheckoutPage = ({
     return deliveryDate;
   }, []);
 
-  // Calculate totals - FIXED: Properly use product quantity
+  // Calculate totals - FIXED: Optimized calculation
   const calculateTotals = useMemo(() => {
-    console.log('Calculating totals with products:', products);
-    
     const subtotal = products.reduce((sum, item) => {
-      // CRITICAL FIX: Get quantity from item, default to 1
       const itemQuantity = item.quantity || 1;
-      console.log(`Item: ${item.name}, Quantity: ${itemQuantity}, Price: ${item.price}`);
       return sum + (item.price * itemQuantity);
     }, 0);
     
@@ -588,20 +568,18 @@ const CheckoutPage = ({
     const tax = subtotal * 0.18;
     const total = subtotal + shippingCost + tax;
     
-    console.log('Subtotal:', subtotal, 'Shipping:', shippingCost, 'Tax:', tax, 'Total:', total);
-    
     return { subtotal, shippingCost, tax, total };
   }, [products, shippingMethod]);
 
   // Generate order number
-  const generateOrderNumber = () => {
+  const generateOrderNumber = useCallback(() => {
     const timestamp = Date.now();
     const randomNum = Math.floor(Math.random() * 1000);
     return `ORD-${timestamp.toString().slice(-8)}${randomNum.toString().padStart(3, '0')}`;
-  };
+  }, []);
 
   // Generate tracking number
-  const generateTrackingNumber = () => {
+  const generateTrackingNumber = useCallback(() => {
     const carriers = CARRIERS.india;
     const randomCarrier = carriers[Math.floor(Math.random() * carriers.length)];
     const trackingNum = Math.random().toString(36).substring(2, 12).toUpperCase();
@@ -610,23 +588,21 @@ const CheckoutPage = ({
       carrier: randomCarrier.name,
       url: randomCarrier.trackingUrl
     };
-  };
+  }, []);
 
-  // Create order API call
-  const createOrder = async (orderPayload) => {
+  // Create order API call - FIXED: Simplified progress updates
+  const createOrder = useCallback(async (orderPayload) => {
     try {
-      // Simulate API call with realistic delay
+      // Simulate API call with progress
       await new Promise(resolve => {
+        let progress = 0;
         const interval = setInterval(() => {
-          setOrderProgress(prev => {
-            const newProgress = prev + Math.random() * 20;
-            if (newProgress >= 100) {
-              clearInterval(interval);
-              setTimeout(resolve, 500);
-              return 100;
-            }
-            return newProgress;
-          });
+          progress += 20;
+          setOrderProgress(Math.min(progress, 100));
+          if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(resolve, 500);
+          }
         }, 300);
       });
 
@@ -657,154 +633,140 @@ const CheckoutPage = ({
       console.error('Order creation failed:', error);
       throw new Error('Failed to create order. Please try again.');
     }
-  };
+  }, [shippingMethod, products, calculateTotals, formData, paymentMethod, generateOrderNumber, generateTrackingNumber, calculateDeliveryDate]);
 
-  // Handle place order
-  const handlePlaceOrder = async () => {
+  // Handle place order - FIXED: Removed nested showConfirmation
+  const handlePlaceOrder = useCallback(async () => {
     if (!validateForm()) {
+      toast.error('Please fix all errors before placing order');
       return;
     }
 
-    showConfirmation({
-      title: 'Confirm Order',
-      message: `Are you sure you want to place this order for ${formatPrice(calculateTotals.total)}? This action cannot be undone.`,
-      confirmText: 'Place Order',
-      cancelText: 'Cancel',
-      onConfirm: async () => {
-        hideConfirmation();
-        setIsProcessing(true);
-        setOrderProgress(0);
+    const shouldPlaceOrder = window.confirm(`Are you sure you want to place this order for ${formatPrice(calculateTotals.total)}?`);
+    
+    if (!shouldPlaceOrder) {
+      return;
+    }
 
-        try {
-          // Prepare order payload with correct quantities
-          const orderPayload = {
-            items: products.map(item => ({
-              productId: item.id,
-              name: item.name,
-              quantity: item.quantity || 1, // Ensure quantity is included
-              price: item.price,
-              image: item.image || item.images?.[0]
-            })),
-            shippingAddress: formData,
-            shippingMethod: {
-              type: shippingMethod,
-              cost: SHIPPING_CONFIG[shippingMethod].cost,
-              estimatedDays: SHIPPING_CONFIG[shippingMethod].days
-            },
-            payment: {
-              method: paymentMethod,
-              ...(paymentMethod === 'credit-card' && {
-                lastFour: paymentData.cardNumber.replace(/\s/g, '').slice(-4)
-              }),
-              ...(paymentMethod === 'upi' && {
-                upiId: paymentData.upiId
-              })
-            },
-            totals: calculateTotals,
-            customer: {
-              email: formData.email,
-              phone: formData.phone,
-              name: `${formData.firstName} ${formData.lastName}`
-            }
-          };
+    setIsProcessing(true);
+    setOrderProgress(0);
 
-          // Call create order API
-          const result = await createOrder(orderPayload);
-          
-          if (result.success) {
-            setOrderData(result.data);
-            setOrderComplete(true);
-            
-            // Save order to localStorage
-            const existingOrders = JSON.parse(localStorage.getItem('ecommerce_orders') || '[]');
-            const newOrder = {
-              id: result.data.orderId,
-              orderNumber: result.data.orderId,
-              date: result.data.orderDate,
-              status: 'ordered',
-              items: result.data.items,
-              total: result.data.totals.total,
-              shippingAddress: result.data.shippingAddress,
-              paymentMethod: result.data.paymentMethod,
-              trackingNumber: result.data.trackingNumber,
-              carrier: result.data.carrier
-            };
-            
-            localStorage.setItem('ecommerce_orders', JSON.stringify([newOrder, ...existingOrders]));
-            
-            // Clear checkout data
-            Object.keys(STORAGE_KEYS).forEach(key => {
-              localStorage.removeItem(STORAGE_KEYS[key]);
-            });
-            
-            toast.success('Order placed successfully!');
-            
-            // Call the parent completion handler
-            if (onCompletePurchase) {
-              onCompletePurchase(result.data);
-            }
-          }
-        } catch (error) {
-          toast.error(error.message || 'Failed to place order. Please try again.');
-          console.error('Order error:', error);
-        } finally {
-          setIsProcessing(false);
+    try {
+      // Prepare order payload
+      const orderPayload = {
+        items: products.map(item => ({
+          productId: item.id,
+          name: item.name,
+          quantity: item.quantity || 1,
+          price: item.price,
+          image: item.image || item.images?.[0]
+        })),
+        shippingAddress: formData,
+        shippingMethod: {
+          type: shippingMethod,
+          cost: SHIPPING_CONFIG[shippingMethod].cost,
+          estimatedDays: SHIPPING_CONFIG[shippingMethod].days
+        },
+        payment: {
+          method: paymentMethod,
+          ...(paymentMethod === 'credit-card' && {
+            lastFour: paymentData.cardNumber.replace(/\s/g, '').slice(-4)
+          }),
+          ...(paymentMethod === 'upi' && {
+            upiId: paymentData.upiId
+          })
+        },
+        totals: calculateTotals,
+        customer: {
+          email: formData.email,
+          phone: formData.phone,
+          name: `${formData.firstName} ${formData.lastName}`
         }
-      },
-      onCancel: hideConfirmation
-    });
-  };
+      };
+
+      // Call create order API
+      const result = await createOrder(orderPayload);
+      
+      if (result.success) {
+        setOrderData(result.data);
+        setOrderComplete(true);
+        
+        // Save order to localStorage
+        const existingOrders = JSON.parse(localStorage.getItem('ecommerce_orders') || '[]');
+        const newOrder = {
+          id: result.data.orderId,
+          orderNumber: result.data.orderId,
+          date: result.data.orderDate,
+          status: 'ordered',
+          items: result.data.items,
+          total: result.data.totals.total,
+          shippingAddress: result.data.shippingAddress,
+          paymentMethod: result.data.paymentMethod,
+          trackingNumber: result.data.trackingNumber,
+          carrier: result.data.carrier
+        };
+        
+        localStorage.setItem('ecommerce_orders', JSON.stringify([newOrder, ...existingOrders]));
+        
+        // Clear checkout data
+        Object.keys(STORAGE_KEYS).forEach(key => {
+          localStorage.removeItem(STORAGE_KEYS[key]);
+        });
+        
+        toast.success('Order placed successfully!');
+        
+        // Call the parent completion handler
+        if (onCompletePurchase) {
+          onCompletePurchase(result.data);
+        }
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to place order. Please try again.');
+      console.error('Order error:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [validateForm, formatPrice, calculateTotals, products, formData, shippingMethod, paymentMethod, paymentData, createOrder, onCompletePurchase]);
 
   // Handle address selection
-  const handleAddressSelect = (addressId) => {
+  const handleAddressSelect = useCallback((addressId) => {
     setSelectedAddressId(addressId);
     const selectedAddress = shippingAddresses.find(addr => addr.id === addressId);
     if (selectedAddress) {
       setFormData(selectedAddress);
     }
-  };
+  }, [shippingAddresses]);
 
-  // Save address with confirmation
-  const handleSaveAddress = () => {
+  // Save address with confirmation - FIXED: Simplified
+  const handleSaveAddress = useCallback(() => {
     if (!isStep1Valid) {
-      showConfirmation({
-        title: 'Validation Error',
-        message: 'Please fill all required fields correctly before saving the address.',
-        confirmText: 'OK',
-        cancelText: 'Cancel',
-        onConfirm: hideConfirmation,
-        onCancel: hideConfirmation
-      });
+      toast.error('Please fill all required fields correctly before saving the address.');
       return;
     }
 
-    showConfirmation({
-      title: 'Save Address',
-      message: 'Do you want to save this address for future orders?',
-      confirmText: 'Save Address',
-      cancelText: 'Cancel',
-      onConfirm: () => {
-        const newAddress = {
-          id: `addr_${Date.now()}`,
-          ...formData,
-          isDefault: shippingAddresses.length === 0
-        };
+    const shouldSave = window.confirm('Do you want to save this address for future orders?');
+    
+    if (!shouldSave) {
+      return;
+    }
 
-        const updatedAddresses = [...shippingAddresses, newAddress];
-        setShippingAddresses(updatedAddresses);
-        setSelectedAddressId(newAddress.id);
-        localStorage.setItem(STORAGE_KEYS.ADDRESSES, JSON.stringify(updatedAddresses));
-        
-        setIsAddingAddress(false);
-        toast.success('Address saved successfully');
-        hideConfirmation();
-      },
-      onCancel: hideConfirmation
-    });
-  };
+    const newAddress = {
+      id: `addr_${Date.now()}`,
+      ...formData,
+      isDefault: shippingAddresses.length === 0
+    };
+
+    const updatedAddresses = [...shippingAddresses, newAddress];
+    setShippingAddresses(updatedAddresses);
+    setSelectedAddressId(newAddress.id);
+    localStorage.setItem(STORAGE_KEYS.ADDRESSES, JSON.stringify(updatedAddresses));
+    
+    setIsAddingAddress(false);
+    toast.success('Address saved successfully');
+  }, [isStep1Valid, formData, shippingAddresses]);
 
   // Format date for display
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-IN', {
       weekday: 'long',
@@ -812,10 +774,10 @@ const CheckoutPage = ({
       month: 'long',
       year: 'numeric'
     });
-  };
+  }, []);
 
   // Calculate delivery progress
-  const calculateDeliveryProgress = (orderDate, estimatedDate) => {
+  const calculateDeliveryProgress = useCallback((orderDate, estimatedDate) => {
     const start = new Date(orderDate).getTime();
     const end = new Date(estimatedDate).getTime();
     const now = new Date().getTime();
@@ -824,58 +786,37 @@ const CheckoutPage = ({
     const elapsed = now - start;
     
     return Math.min(Math.max(Math.floor((elapsed / total) * 100), 0), 100);
-  };
+  }, []);
 
-  // Handle step navigation
-  const handleNextStep = () => {
+  // Handle step navigation - FIXED: Removed showConfirmation calls
+  const handleNextStep = useCallback(() => {
     if (step === 1 && !isStep1Valid) {
-      showConfirmation({
-        title: 'Validation Error',
-        message: 'Please fill all required shipping address fields before proceeding.',
-        confirmText: 'OK',
-        cancelText: 'Cancel',
-        onConfirm: hideConfirmation,
-        onCancel: hideConfirmation
-      });
+      toast.error('Please fill all required shipping address fields before proceeding.');
       return;
     }
     
     if (step === 2 && !isStep2Valid) {
-      showConfirmation({
-        title: 'Validation Error',
-        message: 'Please select a shipping method before proceeding.',
-        confirmText: 'OK',
-        cancelText: 'Cancel',
-        onConfirm: hideConfirmation,
-        onCancel: hideConfirmation
-      });
+      toast.error('Please select a shipping method before proceeding.');
       return;
     }
     
     setStep(prev => Math.min(prev + 1, 3));
-  };
+  }, [step, isStep1Valid, isStep2Valid]);
 
-  const handlePrevStep = () => {
+  const handlePrevStep = useCallback(() => {
     if (step > 1) {
       setStep(prev => prev - 1);
     } else {
-      showConfirmation({
-        title: 'Leave Checkout',
-        message: 'Are you sure you want to leave? Your progress will be saved.',
-        confirmText: 'Leave',
-        cancelText: 'Stay',
-        onConfirm: () => {
-          hideConfirmation();
-          if (onBack) {
-            onBack();
-          } else {
-            navigate(-1);
-          }
-        },
-        onCancel: hideConfirmation
-      });
+      const shouldLeave = window.confirm('Are you sure you want to leave? Your progress will be saved.');
+      if (shouldLeave) {
+        if (onBack) {
+          onBack();
+        } else {
+          navigate(-1);
+        }
+      }
     }
-  };
+  }, [step, onBack, navigate]);
 
   if (isLoading) {
     return (
@@ -1066,34 +1007,6 @@ const CheckoutPage = ({
                 </button>
               </div>
 
-              {/* Quick Actions */}
-              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
-                <h4 className="font-medium text-gray-900 mb-3 text-sm sm:text-base"></h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                  <button
-                    onClick={() => handleSuccessModalButtonClick('/')}
-                    className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded truncate"
-                  >
-                  </button>
-                  <button
-                    onClick={() => handleSuccessModalButtonClick('/')}
-                    className="text-xs sm:text-sm text-gray-600 hover:text-gray-800 p-2 hover:bg-gray-50 rounded truncate"
-                  >
-                    
-                  </button>
-                  <button
-                    onClick={() => handleSuccessModalButtonClick('/')}
-                    className="text-xs sm:text-sm text-gray-600 hover:text-gray-800 p-2 hover:bg-gray-50 rounded truncate"
-                  >
-                  </button>
-                  <button
-                    onClick={() => handleSuccessModalButtonClick('copy-tracking')}
-                    className="text-xs sm:text-sm text-green-600 hover:text-green-800 p-2 hover:bg-green-50 rounded truncate"
-                  >
-                  </button>
-                </div>
-              </div>
-
               {/* Note */}
               <div className="mt-4 sm:mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <p className="text-xs sm:text-sm text-yellow-800">
@@ -1112,7 +1025,7 @@ const CheckoutPage = ({
     <div className="min-h-screen bg-gray-50">
       <ToastContainer />
       
-      {/* Confirmation Modal */}
+      {/* Confirmation Modal - Simplified to prevent freeze */}
       {showConfirmModal && (
         <div className="fixed inset-0 backdrop-blur-sm sm:backdrop-blur-md flex items-center justify-center p-3 sm:p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl sm:shadow-2xl max-w-xs sm:max-w-sm md:max-w-md w-full mx-2 sm:mx-4">
@@ -1659,17 +1572,15 @@ const CheckoutPage = ({
             )}
           </div>
 
-          {/* Order Summary Sidebar - FIXED to show quantity */}
+          {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6 lg:sticky lg:top-24">
               <h2 className="text-lg font-bold text-gray-900 mb-3 sm:mb-4">Order Summary</h2>
               
-              {/* Products List - FIXED to show correct quantity */}
+              {/* Products List */}
               <div className="space-y-3 sm:space-y-4 max-h-48 sm:max-h-64 overflow-y-auto pr-2">
                 {products.map((product, index) => {
-                  // Get quantity from product object, default to 1
                   const productQuantity = product.quantity || 1;
-                  console.log(`Displaying product: ${product.name}, Quantity: ${productQuantity}`);
                   
                   return (
                     <div key={index} className="flex items-start space-x-2 sm:space-x-3">
@@ -1685,7 +1596,6 @@ const CheckoutPage = ({
                           <span className="text-xs sm:text-sm font-medium">{formatPrice(product.price)}</span>
                           <span className="text-xs text-gray-600">Qty: {productQuantity}</span>
                         </div>
-                        {/* Show total for this item */}
                         <div className="text-xs text-green-600 font-medium mt-0.5">
                           Total: {formatPrice(product.price * productQuantity)}
                         </div>
@@ -1695,7 +1605,7 @@ const CheckoutPage = ({
                 })}
               </div>
 
-              {/* Totals - FIXED to calculate correctly */}
+              {/* Totals */}
               <div className="border-t pt-3 sm:pt-4 mt-3 sm:mt-4 space-y-1.5 sm:space-y-2">
                 <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Subtotal</span>
