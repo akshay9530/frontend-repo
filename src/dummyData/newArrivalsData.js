@@ -1,0 +1,260 @@
+export const newArrivalsProducts = [
+  {
+    id: 1,
+    name: 'Cotton Poplin Handkerchief Hem Shirt',
+    brand: 'Premium Brand',
+    category: 'Clothes',
+    productType: 'Shirt',
+    price: 1299,
+    discount: 30,
+    originalPrice: 1859,
+    images: [
+      'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=900&q=80',
+      'https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=900&q=80',
+      'https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=900&q=80',
+      'https://images.unsplash.com/photo-1544441893-675973e31985?w=900&q=80'
+    ],
+    rating: 4.2,
+    reviews: 15,
+    isNew: true,
+    colour: 'White',
+    size: 'XS',
+    stock: 10,
+    description: 'A classic cotton poplin shirt with a modern handkerchief hem design. Perfect for both casual and formal occasions.',
+    features: [
+      "100% Premium Cotton Poplin",
+      "Handkerchief Hem Design",
+      "Button Front Closure",
+      "Long Sleeves with Cuff Buttons",
+      "Regular Fit",
+      "Machine Washable"
+    ],
+    sku: 'W85709-WHITE-XS'
+  },
+  {
+    id: 2,
+    name: 'Apple iPhone 15 Pro',
+    brand: 'Apple',
+    category: 'Electronics',
+    productType: 'Smartphone',
+    price: 129999,
+    discount: 15,
+    originalPrice: 152999,
+    images: [
+      'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=900&q=80',
+      'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=900&q=80',
+      'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=900&q=80',
+      'https://stock-checker.com/images/products/iphone-15.png'
+    ],
+    rating: 4.8,
+    reviews: 89,
+    isNew: true,
+    colour: 'Titanium',
+    storage: '256GB',
+    size: '6.1"',
+    stock: 5,
+    description: 'Latest iPhone 15 Pro with A17 Pro chip, titanium design, and advanced camera system.',
+    features: [
+      "A17 Pro Chip",
+      "Titanium Design",
+      "48MP Main Camera",
+      "ProMotion Display",
+      "USB-C Port",
+      "iOS 17"
+    ],
+    sku: 'IPH15-PRO-256-TIT'
+  },
+  {
+    id: 3,
+    name: "Levi's 501 Original Jeans",
+    brand: "Levi's",
+    category: 'Clothes',
+    productType: 'Jeans',
+    price: 4599,
+    discount: 25,
+    originalPrice: 6199,
+    images: [
+      'https://images.unsplash.com/photo-1542272604-787c3835535d?w=900&q=80',
+      'https://assets.myntassets.com/w_412,q_30,dpr_3,fl_progressive,f_webp/assets/images/25756772/2023/12/12/5184b638-46bd-4d9b-a982-299035bd333f1702382454543-Levis-Men-Jeans-4081702382454114-1.jpg',
+      'https://levi.in/cdn/shop/files/A70870032_01_Front_abc8a15c-4888-4eb7-a787-1c329de29b80.jpg?v=1740488428',
+      'https://images.unsplash.com/photo-1582418702059-97ebafb35d09?w=900&q=80'
+    ],
+    rating: 4.3,
+    reviews: 42,
+    isNew: true,
+    colour: 'Dark Blue',
+    size: '32W x 32L',
+    stock: 15,
+    description: 'Original 501 jeans from Levi\'s with classic straight fit and button fly.',
+    features: [
+      "100% Cotton Denim",
+      "Button Fly",
+      "Straight Leg Fit",
+      "Five-Pocket Style",
+      "Original Levi's Quality",
+      "Made in India"
+    ],
+    sku: 'LEV501-32D-BLUE'
+  },
+  {
+    id: 4,
+    name: 'Fossil Chronograph Watch',
+    brand: 'Fossil',
+    category: 'Watch',
+    productType: 'Chronograph',
+    price: 12999,
+    discount: 20,
+    originalPrice: 16249,
+    images: [
+      'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=900&q=80',
+      'https://www.fossil.com/on/demandware.static/-/Library-Sites-FossilSharedLibrary/default/dw87b0dbb2/2025/HO25/set_10272025_global_holiday_lp/watches/Watches_LP_carousel_Type_Mens_silver.jpg',
+      'https://fossil.scene7.com/is/image/FossilPartners/FS6096_main?$sfcc_fos_large$',
+      'https://fossil.scene7.com/is/image/FossilPartners/FS5792_main?$sfcc_fos_large$'
+    ],
+    rating: 4.6,
+    reviews: 31,
+    isNew: true,
+    colour: 'Brown',
+    size: '44mm',
+    stock: 8,
+    description: 'Stylish chronograph watch with leather strap and multiple dials.',
+    features: [
+      "Chronograph Function",
+      "Leather Strap",
+      "44mm Case",
+      "Water Resistant",
+      "Date Window",
+      "Quartz Movement"
+    ],
+    sku: 'FOS-CHR-BRN-44'
+  },
+  {
+    id: 5,
+    name: 'Sony WH-1000XM4 Headphones',
+    brand: 'Sony',
+    category: 'Electronics',
+    productType: 'Headphones',
+    price: 28999,
+    discount: 30,
+    originalPrice: 41499,
+    images: [
+      'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=900&q=80',
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=900&q=80',
+      'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=900&q=80',
+      'https://images.unsplash.com/photo-1599669454699-248893623440?w=900&q=80'
+    ],
+    rating: 4.7,
+    reviews: 67,
+    isNew: true,
+    colour: 'Black',
+    size: 'One Size',
+    stock: 12,
+    description: 'Industry-leading noise cancelling headphones with exceptional sound quality.',
+    features: [
+      "Industry-Leading Noise Cancellation",
+      "30-Hour Battery Life",
+      "Touch Controls",
+      "Voice Assistant Support",
+      "Hi-Res Audio",
+      "Wireless & Wired Modes"
+    ],
+    sku: 'SONY-XM4-BLK'
+  },
+  {
+    id: 6,
+    name: 'Calvin Klein Eternity Perfume',
+    brand: 'Calvin Klein',
+    category: 'Fragrance',
+    productType: 'Perfume',
+    price: 5999,
+    discount: 24,
+    originalPrice: 7899,
+    images: [
+      'https://images.unsplash.com/photo-1541643600914-78b084683601?w=900&q=80',
+      'https://assets.myntassets.com/w_412,q_30,dpr_3,fl_progressive,f_webp/assets/images/29950497/2024/10/16/3163cd79-17eb-4235-9d6a-6e274b33fada1729059301264-Calvin-Klein-Men-Eternity-Aromatic-Essence-Parfum-Spray---50-1.jpg',
+      'https://m.media-amazon.com/images/I/81tRHOPxqpL._AC_UF1000,1000_QL80_.jpg',
+      'https://calvinklein-eu.scene7.com/is/image/CalvinKleinEU/9350144551_MUL_alternate1?$b2c_updp_m_mainImage_1920$'
+    ],
+    rating: 4.4,
+    reviews: 28,
+    isNew: true,
+    colour: 'Clear',
+    size: '100ml',
+    stock: 20,
+    description: 'Classic fragrance with floral and woody notes, perfect for daily wear.',
+    features: [
+      "100ml Eau de Parfum",
+      "Floral Woody Scent",
+      "Long Lasting",
+      "Elegant Packaging",
+      "Unisex Fragrance",
+      "Signature Calvin Klein"
+    ],
+    sku: 'CK-ETERNITY-100'
+  },
+  {
+    id: 7,
+    name: 'Adidas Ultraboost 5.0',
+    brand: 'Adidas',
+    category: 'Sneakers',
+    productType: 'Running Shoes',
+    price: 14999,
+    discount: 30,
+    originalPrice: 21499,
+    images: [
+      'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=900&q=80',
+      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900&q=80',
+      'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=900&q=80',
+      'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=900&q=80'
+    ],
+    rating: 4.6,
+    reviews: 53,
+    isNew: true,
+    colour: 'White',
+    size: 'US 10',
+    stock: 7,
+    description: 'Premium running shoes with Boost technology for ultimate comfort and performance.',
+    features: [
+      "Boost Technology",
+      "Primeknit Upper",
+      "Continental Rubber Outsole",
+      "Torsion System",
+      "Breathable Design",
+      "Lightweight Construction"
+    ],
+    sku: 'ADI-UB5-WH-10'
+  },
+  {
+    id: 8,
+    name: 'Samsung Galaxy S24',
+    brand: 'Samsung',
+    category: 'Electronics',
+    productType: 'Smartphone',
+    price: 84999,
+    discount: 24,
+    originalPrice: 111999,
+    images: [
+      'https://electronicparadise.in/cdn/shop/files/06_92876405-1eda-43d1-9e56-8094deed6d47.jpg?v=1707312585&width=1406',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsQ4JX-0-VlDJxL4K31v0KLPYQHYPEwgg4uoMTmtsd12gQy0uJuhj2NsoJLDYn_RWICho&usqp=CAU',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRlkmCwmw9jwZW3_DalARpVnmBWeaXeSgtimGiFHHiZZIpQ5cUPvSCZcEt1EsU_PN712TQ&usqp=CAU',
+      'https://static.alaneesqatar.qa/2024/08/Untitled-design-2024-08-26T120206-972_h1nFVrw4C.png'
+    ],
+    rating: 4.5,
+    reviews: 45,
+    isNew: true,
+    colour: 'Phantom Black',
+    storage: '256GB',
+    size: '6.2"',
+    stock: 6,
+    description: 'Latest Samsung flagship with AI features, powerful camera, and stunning display.',
+    features: [
+      "Galaxy AI Features",
+      "200MP Camera System",
+      "Dynamic AMOLED 2X",
+      "Snapdragon 8 Gen 3",
+      "45W Fast Charging",
+      "IP68 Water Resistance"
+    ],
+    sku: 'SGS24-256-BLK'
+  }
+];
