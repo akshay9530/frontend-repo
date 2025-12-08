@@ -29,6 +29,14 @@ const AdminProducts = () => {
     gender: ''
   });
 
+  // Modal states
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [modalType, setModalType] = useState(''); // 'delete', 'success', 'error'
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalCallback, setModalCallback] = useState(null);
+  const [modalTitle, setModalTitle] = useState('');
+  const [productToDelete, setProductToDelete] = useState(null);
+
   // Static categories and subcategories based on your navbar routes
   const staticCategories = {
     'Clothes': ['Men Clothes', 'Women Clothes'],
@@ -83,9 +91,35 @@ const AdminProducts = () => {
       }
     } catch (error) {
       console.error('Error fetching products:', error);
+      showModal('error', 'Error', 'Failed to fetch products. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Modal functions
+  const showModal = (type, title, message, callback = null) => {
+    setModalType(type);
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalCallback(() => callback);
+    setShowConfirmModal(true);
+  };
+
+  const hideModal = () => {
+    setShowConfirmModal(false);
+    setModalType('');
+    setModalTitle('');
+    setModalMessage('');
+    setModalCallback(null);
+    setProductToDelete(null);
+  };
+
+  const handleConfirm = () => {
+    if (modalCallback) {
+      modalCallback();
+    }
+    hideModal();
   };
 
   const handleInputChange = (e) => {
@@ -191,13 +225,17 @@ const AdminProducts = () => {
         fetchProducts();
         resetForm();
         showEditModal ? setShowEditModal(false) : setShowAddModal(false);
-        alert(showEditModal ? 'Product updated successfully!' : 'Product added successfully!');
+        showModal(
+          'success',
+          'Success',
+          showEditModal ? 'Product updated successfully!' : 'Product added successfully!'
+        );
       } else {
-        alert(data.message || 'Error saving product');
+        showModal('error', 'Error', data.message || 'Error saving product');
       }
     } catch (error) {
       console.error('Error saving product:', error);
-      alert('Error saving product. Check console for details.');
+      showModal('error', 'Error', 'Error saving product. Please check console for details.');
     }
   };
 
@@ -224,9 +262,17 @@ const AdminProducts = () => {
     setShowEditModal(true);
   };
 
-  const handleDelete = async (productId) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
-    
+  const handleDeleteClick = (productId) => {
+    setProductToDelete(productId);
+    showModal(
+      'delete',
+      'Confirm Delete',
+      'Are you sure you want to delete this product? This action cannot be undone.',
+      () => performDelete(productId)
+    );
+  };
+
+  const performDelete = async (productId) => {
     try {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/products/${productId}`, {
@@ -240,11 +286,13 @@ const AdminProducts = () => {
       
       if (data.success) {
         fetchProducts();
-        alert('Product deleted successfully!');
+        showModal('success', 'Success', 'Product deleted successfully!');
+      } else {
+        showModal('error', 'Error', data.message || 'Error deleting product');
       }
     } catch (error) {
       console.error('Error deleting product:', error);
-      alert('Error deleting product');
+      showModal('error', 'Error', 'Error deleting product');
     }
   };
 
@@ -271,8 +319,101 @@ const AdminProducts = () => {
     setImagePreview('');
   };
 
+  // Get modal icon based on type
+  const getModalIcon = () => {
+    switch(modalType) {
+      case 'delete':
+        return (
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+            <FiTrash2 className="h-6 w-6 text-red-600" />
+          </div>
+        );
+      case 'success':
+        return (
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+            <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+        );
+      case 'error':
+        return (
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+            <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Get button color based on modal type
+  const getButtonColor = () => {
+    switch(modalType) {
+      case 'delete':
+        return 'bg-red-600 hover:bg-red-700 focus:ring-red-500';
+      case 'success':
+        return 'bg-green-600 hover:bg-green-700 focus:ring-green-500';
+      case 'error':
+        return 'bg-red-600 hover:bg-red-700 focus:ring-red-500';
+      default:
+        return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500';
+    }
+  };
+
   return (
     <div className="p-3 sm:p-4 md:p-6">
+      {/* Fixed Confirm Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex flex-col items-center text-center">
+                {getModalIcon()}
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {modalTitle}
+                </h3>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600 whitespace-pre-line">
+                    {modalMessage}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gray-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3">
+              {modalType === 'delete' ? (
+                <>
+                  <button
+                    type="button"
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm"
+                    onClick={hideModal}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className={`w-full inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 sm:w-auto sm:text-sm ${getButtonColor()}`}
+                    onClick={handleConfirm}
+                  >
+                    Delete
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className={`w-full inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 sm:w-auto sm:text-sm ${getButtonColor()}`}
+                  onClick={hideModal}
+                >
+                  OK
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-0">
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Product Management</h1>
         <button
@@ -306,7 +447,7 @@ const AdminProducts = () => {
                       <FiEdit2 className="h-4 w-4 sm:h-5 sm:w-5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(product._id)}
+                      onClick={() => handleDeleteClick(product._id)}
                       className="text-red-600 hover:text-red-900 transition-colors p-1 sm:p-0"
                       title="Delete"
                     >
@@ -395,7 +536,7 @@ const AdminProducts = () => {
 
       {/* Add Product Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-40 p-2 sm:p-4 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl mx-2 sm:mx-4 my-4 max-h-[95vh] overflow-y-auto">
             <div className="px-4 sm:px-6 py-3 sm:py-4 border-b">
               <div className="flex justify-between items-center">
@@ -711,7 +852,7 @@ const AdminProducts = () => {
 
       {/* Edit Product Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-40 p-2 sm:p-4 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl mx-2 sm:mx-4 my-4 max-h-[95vh] overflow-y-auto">
             <div className="px-4 sm:px-6 py-3 sm:py-4 border-b">
               <div className="flex justify-between items-center">

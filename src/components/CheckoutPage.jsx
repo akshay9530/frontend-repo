@@ -156,6 +156,22 @@ const CheckoutPage = ({
     setShowConfirmModal(false);
   }, []);
 
+  // Handle modal confirmation
+  const handleModalConfirm = useCallback(() => {
+    if (confirmModalConfig.onConfirm) {
+      confirmModalConfig.onConfirm();
+    }
+    hideConfirmation();
+  }, [confirmModalConfig, hideConfirmation]);
+
+  // Handle modal cancel
+  const handleModalCancel = useCallback(() => {
+    if (confirmModalConfig.onCancel) {
+      confirmModalConfig.onCancel();
+    }
+    hideConfirmation();
+  }, [confirmModalConfig, hideConfirmation]);
+
   // Load saved data on component mount - FIXED: Removed infinite loop
   useEffect(() => {
     const loadSavedData = async () => {
@@ -635,98 +651,103 @@ const CheckoutPage = ({
     }
   }, [shippingMethod, products, calculateTotals, formData, paymentMethod, generateOrderNumber, generateTrackingNumber, calculateDeliveryDate]);
 
-  // Handle place order - FIXED: Removed nested showConfirmation
-  const handlePlaceOrder = useCallback(async () => {
+  // Handle place order - FIXED: Replaced window.confirm with custom modal
+  const handlePlaceOrder = useCallback(() => {
     if (!validateForm()) {
       toast.error('Please fix all errors before placing order');
       return;
     }
 
-    const shouldPlaceOrder = window.confirm(`Are you sure you want to place this order for ${formatPrice(calculateTotals.total)}?`);
-    
-    if (!shouldPlaceOrder) {
-      return;
-    }
+    showConfirmation({
+      title: 'Confirm Order',
+      message: `Are you sure you want to place this order for ${formatPrice(calculateTotals.total)}?`,
+      confirmText: 'Place Order',
+      cancelText: 'Cancel',
+      onConfirm: async () => {
+        setIsProcessing(true);
+        setOrderProgress(0);
 
-    setIsProcessing(true);
-    setOrderProgress(0);
+        try {
+          // Prepare order payload
+          const orderPayload = {
+            items: products.map(item => ({
+              productId: item.id,
+              name: item.name,
+              quantity: item.quantity || 1,
+              price: item.price,
+              image: item.image || item.images?.[0]
+            })),
+            shippingAddress: formData,
+            shippingMethod: {
+              type: shippingMethod,
+              cost: SHIPPING_CONFIG[shippingMethod].cost,
+              estimatedDays: SHIPPING_CONFIG[shippingMethod].days
+            },
+            payment: {
+              method: paymentMethod,
+              ...(paymentMethod === 'credit-card' && {
+                lastFour: paymentData.cardNumber.replace(/\s/g, '').slice(-4)
+              }),
+              ...(paymentMethod === 'upi' && {
+                upiId: paymentData.upiId
+              })
+            },
+            totals: calculateTotals,
+            customer: {
+              email: formData.email,
+              phone: formData.phone,
+              name: `${formData.firstName} ${formData.lastName}`
+            }
+          };
 
-    try {
-      // Prepare order payload
-      const orderPayload = {
-        items: products.map(item => ({
-          productId: item.id,
-          name: item.name,
-          quantity: item.quantity || 1,
-          price: item.price,
-          image: item.image || item.images?.[0]
-        })),
-        shippingAddress: formData,
-        shippingMethod: {
-          type: shippingMethod,
-          cost: SHIPPING_CONFIG[shippingMethod].cost,
-          estimatedDays: SHIPPING_CONFIG[shippingMethod].days
-        },
-        payment: {
-          method: paymentMethod,
-          ...(paymentMethod === 'credit-card' && {
-            lastFour: paymentData.cardNumber.replace(/\s/g, '').slice(-4)
-          }),
-          ...(paymentMethod === 'upi' && {
-            upiId: paymentData.upiId
-          })
-        },
-        totals: calculateTotals,
-        customer: {
-          email: formData.email,
-          phone: formData.phone,
-          name: `${formData.firstName} ${formData.lastName}`
+          // Call create order API
+          const result = await createOrder(orderPayload);
+          
+          if (result.success) {
+            setOrderData(result.data);
+            setOrderComplete(true);
+            
+            // Save order to localStorage
+            const existingOrders = JSON.parse(localStorage.getItem('ecommerce_orders') || '[]');
+            const newOrder = {
+              id: result.data.orderId,
+              orderNumber: result.data.orderId,
+              date: result.data.orderDate,
+              status: 'ordered',
+              items: result.data.items,
+              total: result.data.totals.total,
+              shippingAddress: result.data.shippingAddress,
+              paymentMethod: result.data.paymentMethod,
+              trackingNumber: result.data.trackingNumber,
+              carrier: result.data.carrier
+            };
+            
+            localStorage.setItem('ecommerce_orders', JSON.stringify([newOrder, ...existingOrders]));
+            
+            // Clear checkout data
+            Object.keys(STORAGE_KEYS).forEach(key => {
+              localStorage.removeItem(STORAGE_KEYS[key]);
+            });
+            
+            toast.success('Order placed successfully!');
+            
+            // Call the parent completion handler
+            if (onCompletePurchase) {
+              onCompletePurchase(result.data);
+            }
+          }
+        } catch (error) {
+          toast.error(error.message || 'Failed to place order. Please try again.');
+          console.error('Order error:', error);
+        } finally {
+          setIsProcessing(false);
         }
-      };
-
-      // Call create order API
-      const result = await createOrder(orderPayload);
-      
-      if (result.success) {
-        setOrderData(result.data);
-        setOrderComplete(true);
-        
-        // Save order to localStorage
-        const existingOrders = JSON.parse(localStorage.getItem('ecommerce_orders') || '[]');
-        const newOrder = {
-          id: result.data.orderId,
-          orderNumber: result.data.orderId,
-          date: result.data.orderDate,
-          status: 'ordered',
-          items: result.data.items,
-          total: result.data.totals.total,
-          shippingAddress: result.data.shippingAddress,
-          paymentMethod: result.data.paymentMethod,
-          trackingNumber: result.data.trackingNumber,
-          carrier: result.data.carrier
-        };
-        
-        localStorage.setItem('ecommerce_orders', JSON.stringify([newOrder, ...existingOrders]));
-        
-        // Clear checkout data
-        Object.keys(STORAGE_KEYS).forEach(key => {
-          localStorage.removeItem(STORAGE_KEYS[key]);
-        });
-        
-        toast.success('Order placed successfully!');
-        
-        // Call the parent completion handler
-        if (onCompletePurchase) {
-          onCompletePurchase(result.data);
-        }
+      },
+      onCancel: () => {
+        // Do nothing when cancelled
       }
-    } catch (error) {
-      toast.error(error.message || 'Failed to place order. Please try again.');
-      console.error('Order error:', error);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [validateForm, formatPrice, calculateTotals, products, formData, shippingMethod, paymentMethod, paymentData, createOrder, onCompletePurchase]);
+    });
+  }, [validateForm, formatPrice, calculateTotals, products, formData, shippingMethod, paymentMethod, paymentData, createOrder, onCompletePurchase, showConfirmation]);
 
   // Handle address selection
   const handleAddressSelect = useCallback((addressId) => {
@@ -737,33 +758,38 @@ const CheckoutPage = ({
     }
   }, [shippingAddresses]);
 
-  // Save address with confirmation - FIXED: Simplified
+  // Save address with confirmation - FIXED: Replaced window.confirm with custom modal
   const handleSaveAddress = useCallback(() => {
     if (!isStep1Valid) {
       toast.error('Please fill all required fields correctly before saving the address.');
       return;
     }
 
-    const shouldSave = window.confirm('Do you want to save this address for future orders?');
-    
-    if (!shouldSave) {
-      return;
-    }
+    showConfirmation({
+      title: 'Save Address',
+      message: 'Do you want to save this address for future orders?',
+      confirmText: 'Save',
+      cancelText: 'Cancel',
+      onConfirm: () => {
+        const newAddress = {
+          id: `addr_${Date.now()}`,
+          ...formData,
+          isDefault: shippingAddresses.length === 0
+        };
 
-    const newAddress = {
-      id: `addr_${Date.now()}`,
-      ...formData,
-      isDefault: shippingAddresses.length === 0
-    };
-
-    const updatedAddresses = [...shippingAddresses, newAddress];
-    setShippingAddresses(updatedAddresses);
-    setSelectedAddressId(newAddress.id);
-    localStorage.setItem(STORAGE_KEYS.ADDRESSES, JSON.stringify(updatedAddresses));
-    
-    setIsAddingAddress(false);
-    toast.success('Address saved successfully');
-  }, [isStep1Valid, formData, shippingAddresses]);
+        const updatedAddresses = [...shippingAddresses, newAddress];
+        setShippingAddresses(updatedAddresses);
+        setSelectedAddressId(newAddress.id);
+        localStorage.setItem(STORAGE_KEYS.ADDRESSES, JSON.stringify(updatedAddresses));
+        
+        setIsAddingAddress(false);
+        toast.success('Address saved successfully');
+      },
+      onCancel: () => {
+        // Do nothing when cancelled
+      }
+    });
+  }, [isStep1Valid, formData, shippingAddresses, showConfirmation]);
 
   // Format date for display
   const formatDate = useCallback((dateString) => {
@@ -788,7 +814,7 @@ const CheckoutPage = ({
     return Math.min(Math.max(Math.floor((elapsed / total) * 100), 0), 100);
   }, []);
 
-  // Handle step navigation - FIXED: Removed showConfirmation calls
+  // Handle step navigation - FIXED: Replaced window.confirm with custom modal
   const handleNextStep = useCallback(() => {
     if (step === 1 && !isStep1Valid) {
       toast.error('Please fill all required shipping address fields before proceeding.');
@@ -807,16 +833,24 @@ const CheckoutPage = ({
     if (step > 1) {
       setStep(prev => prev - 1);
     } else {
-      const shouldLeave = window.confirm('Are you sure you want to leave? Your progress will be saved.');
-      if (shouldLeave) {
-        if (onBack) {
-          onBack();
-        } else {
-          navigate(-1);
+      showConfirmation({
+        title: 'Leave Checkout',
+        message: 'Are you sure you want to leave? Your progress will be saved.',
+        confirmText: 'Leave',
+        cancelText: 'Stay',
+        onConfirm: () => {
+          if (onBack) {
+            onBack();
+          } else {
+            navigate(-1);
+          }
+        },
+        onCancel: () => {
+          // Do nothing when cancelled
         }
-      }
+      });
     }
-  }, [step, onBack, navigate]);
+  }, [step, onBack, navigate, showConfirmation]);
 
   if (isLoading) {
     return (
@@ -1025,37 +1059,40 @@ const CheckoutPage = ({
     <div className="min-h-screen bg-gray-50">
       <ToastContainer />
       
-      {/* Confirmation Modal - Simplified to prevent freeze */}
+      {/* Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 backdrop-blur-sm sm:backdrop-blur-md flex items-center justify-center p-3 sm:p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl sm:shadow-2xl max-w-xs sm:max-w-sm md:max-w-md w-full mx-2 sm:mx-4">
-            <div className="p-4 sm:p-6">
-              <div className="flex justify-between items-start mb-3 sm:mb-4">
-                <h3 className="text-base sm:text-lg font-bold text-gray-900">{confirmModalConfig.title}</h3>
-                <button
-                  onClick={hideConfirmation}
-                  className="text-gray-400 hover:text-gray-600 ml-2"
-                >
-                  <FiX className="w-5 h-5" />
-                </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex flex-col items-center text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                  <FiAlertCircle className="h-6 w-6 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {confirmModalConfig.title}
+                </h3>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600 whitespace-pre-line">
+                    {confirmModalConfig.message}
+                  </p>
+                </div>
               </div>
-              
-              <p className="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">{confirmModalConfig.message}</p>
-              
-              <div className="flex justify-end space-x-2 sm:space-x-3">
-                <button
-                  onClick={confirmModalConfig.onCancel}
-                  className="px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base flex-1 sm:flex-none"
-                >
-                  {confirmModalConfig.cancelText}
-                </button>
-                <button
-                  onClick={confirmModalConfig.onConfirm}
-                  className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base flex-1 sm:flex-none"
-                >
-                  {confirmModalConfig.confirmText}
-                </button>
-              </div>
+            </div>
+            <div className="bg-gray-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3">
+              <button
+                type="button"
+                onClick={handleModalCancel}
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm"
+              >
+                {confirmModalConfig.cancelText}
+              </button>
+              <button
+                type="button"
+                onClick={handleModalConfirm}
+                className="w-full inline-flex justify-center rounded-md border border-transparent px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:w-auto sm:text-sm"
+              >
+                {confirmModalConfig.confirmText}
+              </button>
             </div>
           </div>
         </div>
