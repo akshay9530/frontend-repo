@@ -823,19 +823,9 @@ const SaleOffers = () => {
                           
                           <div className="flex items-center justify-between mt-2 sm:mt-3">
                             <div className="flex items-center gap-2 sm:gap-3">
-                              <button
-                                onClick={() => updateQuantity(item.id, item.size || item.storage, Math.max(1, item.quantity - 1))}
-                                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-                              >
-                                -
-                              </button>
+                          
                               <span className="font-medium w-6 text-center text-sm sm:text-base">{item.quantity}</span>
-                              <button
-                                onClick={() => updateQuantity(item.id, item.size || item.storage, item.quantity + 1)}
-                                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-                              >
-                                +
-                              </button>
+                        
                             </div>
                             <div className="font-semibold text-gray-900 text-sm sm:text-base">
                               {formatPrice ? formatPrice(item.price * item.quantity) : `₹${(item.price * item.quantity).toLocaleString()}`}

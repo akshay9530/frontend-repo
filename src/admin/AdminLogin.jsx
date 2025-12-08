@@ -36,7 +36,6 @@ const AdminLogin = () => {
       const data = await response.json();
 
       if (data.success) {
-        // Check if user is admin
         if (data.user.role === 'admin') {
           localStorage.setItem('adminToken', data.token);
           localStorage.setItem('adminUser', JSON.stringify(data.user));
@@ -87,7 +86,7 @@ const AdminLogin = () => {
                   name="email"
                   type="email"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                  className="appearance-none rounded-none relative block w-full px-3 py-3 sm:py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 text-sm sm:text-base"
                   placeholder="Email address"
                   value={formData.email}
                   onChange={handleChange}
@@ -107,7 +106,7 @@ const AdminLogin = () => {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                  className="appearance-none rounded-none relative block w-full px-3 py-3 sm:py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 text-sm sm:text-base"
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
@@ -131,7 +130,7 @@ const AdminLogin = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>

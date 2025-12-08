@@ -43,7 +43,6 @@ import PrivateRoute from "./components/PrivateRoute";
 import AdminDashboard from "./admin/AdminDashboard";
 import AdminUsers from "./admin/AdminUsers";
 import AdminProducts from "./admin/AdminProducts";
-import AdminCategories from "./admin/AdminCategories";
 import AdminOrders from "./admin/AdminOrders";
 import AdminRevenue from "./admin/AdminRevenue";
 import AdminSettings from "./admin/AdminSettings";
@@ -104,7 +103,6 @@ function App() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="products" element={<AdminProducts />} />
-              <Route path="categories" element={<AdminCategories />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="revenue" element={<AdminRevenue />} />
               <Route path="settings" element={<AdminSettings />} />

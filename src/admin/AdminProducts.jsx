@@ -26,7 +26,7 @@ const AdminProducts = () => {
     isNewArrival: false,
     isOnSale: false,
     discount: 0,
-    gender: '' // Added gender field
+    gender: ''
   });
 
   // Static categories and subcategories based on your navbar routes
@@ -272,12 +272,12 @@ const AdminProducts = () => {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Product Management</h1>
+    <div className="p-3 sm:p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-0">
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Product Management</h1>
         <button
           onClick={() => setShowAddModal(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center transition-colors"
+          className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-green-700 flex items-center justify-center transition-colors w-full sm:w-auto text-sm sm:text-base"
         >
           <FiPlus className="mr-2" /> Add Product
         </button>
@@ -285,67 +285,67 @@ const AdminProducts = () => {
 
       {/* Products Grid */}
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="flex justify-center items-center h-48 sm:h-64">
+          <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-green-600"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           {products.map((product) => (
-            <div key={product._id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="p-4">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate">
+            <div key={product._id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
+              <div className="p-3 sm:p-4">
+                <div className="flex justify-between items-start mb-3 sm:mb-4">
+                  <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 truncate max-w-[60%]">
                     {product.name}
                   </h3>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-1 sm:space-x-2">
                     <button
                       onClick={() => handleEdit(product)}
-                      className="text-blue-600 hover:text-blue-900 transition-colors"
+                      className="text-blue-600 hover:text-blue-900 transition-colors p-1 sm:p-0"
                       title="Edit"
                     >
-                      <FiEdit2 className="h-5 w-5" />
+                      <FiEdit2 className="h-4 w-4 sm:h-5 sm:w-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(product._id)}
-                      className="text-red-600 hover:text-red-900 transition-colors"
+                      className="text-red-600 hover:text-red-900 transition-colors p-1 sm:p-0"
                       title="Delete"
                     >
-                      <FiTrash2 className="h-5 w-5" />
+                      <FiTrash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                     </button>
                   </div>
                 </div>
                 
                 {product.images && product.images[0] && (
-                  <div className="mb-4">
+                  <div className="mb-3 sm:mb-4">
                     <img
                       src={product.images[0].url}
                       alt={product.name}
-                      className="w-full h-48 object-cover rounded-lg"
+                      className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-lg"
                     />
                   </div>
                 )}
                 
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
                   {product.description}
                 </p>
                 
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4 gap-2 sm:gap-0">
                   <div>
-                    <span className="text-xl font-bold text-gray-900">
+                    <span className="text-base sm:text-lg md:text-xl font-bold text-gray-900">
                       ₹{product.price}
                     </span>
                     {product.discount > 0 && (
                       <>
-                        <span className="ml-2 text-sm text-gray-500 line-through">
+                        <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500 line-through">
                           ₹{product.originalPrice || product.price}
                         </span>
-                        <span className="ml-2 text-sm font-bold text-red-600">
+                        <span className="ml-1 sm:ml-2 text-xs sm:text-sm font-bold text-red-600">
                           ({product.discount}% OFF)
                         </span>
                       </>
                     )}
                   </div>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
+                  <span className={`px-2 py-1 text-xs rounded-full w-fit ${
                     product.stock > 10 ? 'bg-green-100 text-green-800' : 
                     product.stock > 0 ? 'bg-yellow-100 text-yellow-800' : 
                     'bg-red-100 text-red-800'
@@ -354,38 +354,38 @@ const AdminProducts = () => {
                   </span>
                 </div>
                 
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
                   {product.isFeatured && (
-                    <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
+                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
                       Featured
                     </span>
                   )}
                   {product.isNewArrival && (
-                    <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                      New Arrival
+                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                      New
                     </span>
                   )}
                   {product.isOnSale && (
-                    <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                      On Sale
+                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs bg-red-100 text-red-800 rounded-full">
+                      Sale
                     </span>
                   )}
                   {product.tags?.includes('Men') && (
-                    <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
                       Men
                     </span>
                   )}
                   {product.tags?.includes('Women') && (
-                    <span className="px-2 py-1 text-xs bg-pink-100 text-pink-800 rounded-full">
+                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs bg-pink-100 text-pink-800 rounded-full">
                       Women
                     </span>
                   )}
                 </div>
                 
-                <div className="text-sm text-gray-500">
-                  <p>Category: {product.category}</p>
-                  <p>Brand: {product.brand}</p>
-                  {product.subCategory && <p>Sub Category: {product.subCategory}</p>}
+                <div className="text-xs sm:text-sm text-gray-500 space-y-1">
+                  <p className="truncate">Category: {product.category}</p>
+                  <p className="truncate">Brand: {product.brand}</p>
+                  {product.subCategory && <p className="truncate">Sub: {product.subCategory}</p>}
                 </div>
               </div>
             </div>
@@ -395,26 +395,26 @@ const AdminProducts = () => {
 
       {/* Add Product Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl mx-2 sm:mx-4 my-4 max-h-[95vh] overflow-y-auto">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium text-gray-900">Add New Product</h3>
+                <h3 className="text-base sm:text-lg font-medium text-gray-900">Add New Product</h3>
                 <button
                   onClick={() => {
                     setShowAddModal(false);
                     resetForm();
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 text-lg sm:text-xl"
                 >
                   ✕
                 </button>
               </div>
             </div>
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <form onSubmit={handleSubmit} className="p-3 sm:p-4 md:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Product Name *
                   </label>
                   <input
@@ -423,13 +423,13 @@ const AdminProducts = () => {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                     placeholder="e.g., Nike Air Max"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Category *
                   </label>
                   <select
@@ -437,7 +437,7 @@ const AdminProducts = () => {
                     value={formData.category}
                     onChange={handleCategoryChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   >
                     <option value="">Select Category</option>
                     <optgroup label="Clothes">
@@ -472,7 +472,7 @@ const AdminProducts = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Brand *
                   </label>
                   <select
@@ -480,7 +480,7 @@ const AdminProducts = () => {
                     value={formData.brand}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   >
                     <option value="">Select Brand</option>
                     {staticBrands.map((brand, index) => (
@@ -492,7 +492,7 @@ const AdminProducts = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Current Price (₹) *
                   </label>
                   <input
@@ -503,14 +503,14 @@ const AdminProducts = () => {
                     required
                     min="0"
                     step="0.01"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                     placeholder="1999"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Original Price (₹) (for sale comparison)
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Original Price (₹)
                   </label>
                   <input
                     type="number"
@@ -519,13 +519,13 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     min="0"
                     step="0.01"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                     placeholder="2499"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Stock Quantity *
                   </label>
                   <input
@@ -535,13 +535,13 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     required
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                     placeholder="100"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Discount (%)
                   </label>
                   <input
@@ -551,14 +551,14 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     min="0"
                     max="100"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                     placeholder="20"
                   />
                 </div>
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Description *
                 </label>
                 <textarea
@@ -566,15 +566,15 @@ const AdminProducts = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                   required
-                  rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  rows="2"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   placeholder="Describe the product features, materials, etc."
                 />
               </div>
               
-              <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Sizes (comma separated)
                   </label>
                   <input
@@ -585,12 +585,12 @@ const AdminProducts = () => {
                       setFormData({ ...formData, sizes });
                     }}
                     placeholder="S, M, L, XL, 38, 40, 42"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Colors (comma separated)
                   </label>
                   <input
@@ -601,16 +601,16 @@ const AdminProducts = () => {
                       setFormData({ ...formData, colors });
                     }}
                     placeholder="Red, Blue, Black, White"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Images
                 </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-md p-4">
+                <div className="border-2 border-dashed border-gray-300 rounded-md p-2 sm:p-4">
                   <input
                     type="file"
                     accept="image/*"
@@ -623,25 +623,25 @@ const AdminProducts = () => {
                     htmlFor="image-upload"
                     className="flex flex-col items-center justify-center cursor-pointer"
                   >
-                    <FiUpload className="w-8 h-8 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-600">Click to upload images</span>
-                    <span className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</span>
+                    <FiUpload className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mb-1 sm:mb-2" />
+                    <span className="text-xs sm:text-sm text-gray-600 text-center">Click to upload images</span>
+                    <span className="text-xs text-gray-500 mt-1 text-center">PNG, JPG, GIF up to 5MB</span>
                   </label>
                 </div>
                 
                 {formData.images.length > 0 && (
-                  <div className="mt-4 grid grid-cols-3 gap-2">
+                  <div className="mt-3 sm:mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                     {formData.images.map((img, index) => (
                       <div key={index} className="relative">
                         <img
                           src={img}
                           alt={`Product ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-md"
+                          className="w-full h-16 sm:h-20 md:h-24 object-cover rounded-md"
                         />
                         <button
                           type="button"
                           onClick={() => removeImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs"
+                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-0.5 sm:p-1 text-xs"
                         >
                           ✕
                         </button>
@@ -651,7 +651,7 @@ const AdminProducts = () => {
                 )}
               </div>
               
-              <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -660,7 +660,7 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 text-sm text-gray-700">Featured Product (Homepage)</label>
+                  <label className="ml-2 text-xs sm:text-sm text-gray-700">Featured Product</label>
                 </div>
                 
                 <div className="flex items-center">
@@ -671,7 +671,7 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 text-sm text-gray-700">New Arrival (New Arrivals Page)</label>
+                  <label className="ml-2 text-xs sm:text-sm text-gray-700">New Arrival</label>
                 </div>
                 
                 <div className="flex items-center">
@@ -682,24 +682,24 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 text-sm text-gray-700">On Sale (Sale Offers Page)</label>
+                  <label className="ml-2 text-xs sm:text-sm text-gray-700">On Sale</label>
                 </div>
               </div>
               
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
                 <button
                   type="button"
                   onClick={() => {
                     setShowAddModal(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-3 sm:px-4 py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors order-2 sm:order-1"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
+                  className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-md text-xs sm:text-sm font-medium hover:bg-green-700 transition-colors order-1 sm:order-2"
                 >
                   Add Product
                 </button>
@@ -711,26 +711,26 @@ const AdminProducts = () => {
 
       {/* Edit Product Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl mx-2 sm:mx-4 my-4 max-h-[95vh] overflow-y-auto">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium text-gray-900">Edit Product</h3>
+                <h3 className="text-base sm:text-lg font-medium text-gray-900">Edit Product</h3>
                 <button
                   onClick={() => {
                     setShowEditModal(false);
                     resetForm();
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 text-lg sm:text-xl"
                 >
                   ✕
                 </button>
               </div>
             </div>
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <form onSubmit={handleSubmit} className="p-3 sm:p-4 md:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Product Name *
                   </label>
                   <input
@@ -739,12 +739,12 @@ const AdminProducts = () => {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Category *
                   </label>
                   <select
@@ -752,7 +752,7 @@ const AdminProducts = () => {
                     value={formData.category}
                     onChange={handleCategoryChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   >
                     <option value="">Select Category</option>
                     <optgroup label="Clothes">
@@ -787,7 +787,7 @@ const AdminProducts = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Brand *
                   </label>
                   <select
@@ -795,7 +795,7 @@ const AdminProducts = () => {
                     value={formData.brand}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   >
                     <option value="">Select Brand</option>
                     {staticBrands.map((brand, index) => (
@@ -807,7 +807,7 @@ const AdminProducts = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Current Price (₹) *
                   </label>
                   <input
@@ -818,12 +818,12 @@ const AdminProducts = () => {
                     required
                     min="0"
                     step="0.01"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Original Price (₹)
                   </label>
                   <input
@@ -833,12 +833,12 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     min="0"
                     step="0.01"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Stock Quantity *
                   </label>
                   <input
@@ -848,12 +848,12 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     required
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Discount (%)
                   </label>
                   <input
@@ -863,13 +863,13 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     min="0"
                     max="100"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Description *
                 </label>
                 <textarea
@@ -877,14 +877,14 @@ const AdminProducts = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                   required
-                  rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  rows="2"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                 />
               </div>
               
-              <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Sizes (comma separated)
                   </label>
                   <input
@@ -895,12 +895,12 @@ const AdminProducts = () => {
                       setFormData({ ...formData, sizes });
                     }}
                     placeholder="S, M, L, XL"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Colors (comma separated)
                   </label>
                   <input
@@ -911,16 +911,16 @@ const AdminProducts = () => {
                       setFormData({ ...formData, colors });
                     }}
                     placeholder="Red, Blue, Green"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Images
                 </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-md p-4">
+                <div className="border-2 border-dashed border-gray-300 rounded-md p-2 sm:p-4">
                   <input
                     type="file"
                     accept="image/*"
@@ -933,24 +933,24 @@ const AdminProducts = () => {
                     htmlFor="edit-image-upload"
                     className="flex flex-col items-center justify-center cursor-pointer"
                   >
-                    <FiUpload className="w-8 h-8 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-600">Click to upload more images</span>
+                    <FiUpload className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mb-1 sm:mb-2" />
+                    <span className="text-xs sm:text-sm text-gray-600">Click to upload more images</span>
                   </label>
                 </div>
                 
                 {formData.images.length > 0 && (
-                  <div className="mt-4 grid grid-cols-3 gap-2">
+                  <div className="mt-3 sm:mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                     {formData.images.map((img, index) => (
                       <div key={index} className="relative">
                         <img
                           src={img}
                           alt={`Product ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-md"
+                          className="w-full h-16 sm:h-20 md:h-24 object-cover rounded-md"
                         />
                         <button
                           type="button"
                           onClick={() => removeImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs"
+                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-0.5 sm:p-1 text-xs"
                         >
                           ✕
                         </button>
@@ -960,7 +960,7 @@ const AdminProducts = () => {
                 )}
               </div>
               
-              <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -969,7 +969,7 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 text-sm text-gray-700">Featured Product</label>
+                  <label className="ml-2 text-xs sm:text-sm text-gray-700">Featured Product</label>
                 </div>
                 
                 <div className="flex items-center">
@@ -980,7 +980,7 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 text-sm text-gray-700">New Arrival</label>
+                  <label className="ml-2 text-xs sm:text-sm text-gray-700">New Arrival</label>
                 </div>
                 
                 <div className="flex items-center">
@@ -991,24 +991,24 @@ const AdminProducts = () => {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 text-sm text-gray-700">On Sale</label>
+                  <label className="ml-2 text-xs sm:text-sm text-gray-700">On Sale</label>
                 </div>
               </div>
               
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
                 <button
                   type="button"
                   onClick={() => {
                     setShowEditModal(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-3 sm:px-4 py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors order-2 sm:order-1"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
+                  className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-md text-xs sm:text-sm font-medium hover:bg-green-700 transition-colors order-1 sm:order-2"
                 >
                   Update Product
                 </button>

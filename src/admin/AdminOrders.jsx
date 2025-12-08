@@ -56,7 +56,7 @@ const AdminOrders = () => {
     setFilters(prev => ({
       ...prev,
       [name]: value,
-      page: 1 // Reset to first page when filters change
+      page: 1
     }));
   };
 
@@ -88,11 +88,15 @@ const AdminOrders = () => {
       if (data.success) {
         fetchOrders();
         setShowStatusModal(false);
-        alert('Order status updated successfully!');
+        if (window.confirm('Order status updated successfully! Click OK to continue.')) {
+          // User clicked OK
+        }
       }
     } catch (error) {
       console.error('Error updating order status:', error);
-      alert('Error updating order status');
+      if (window.confirm('Error updating order status. Click OK to acknowledge.')) {
+        // User acknowledged error
+      }
     }
   };
 
@@ -116,11 +120,15 @@ const AdminOrders = () => {
       if (data.success) {
         fetchOrders();
         setShowPaymentModal(false);
-        alert('Payment status updated successfully!');
+        if (window.confirm('Payment status updated successfully! Click OK to continue.')) {
+          // User clicked OK
+        }
       }
     } catch (error) {
       console.error('Error updating payment status:', error);
-      alert('Error updating payment status');
+      if (window.confirm('Error updating payment status. Click OK to acknowledge.')) {
+        // User acknowledged error
+      }
     }
   };
 
@@ -231,117 +239,119 @@ const AdminOrders = () => {
           </div>
         ) : (
           <>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order #
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Items
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Payment
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {orders.map((order) => (
-                  <tr key={order._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-green-600">
-                        #{order.orderNumber}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {order.shippingAddress?.firstName} {order.shippingAddress?.lastName}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {order.user?.email || order.shippingAddress?.email}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {new Date(order.createdAt).toLocaleTimeString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {order.items.length} items
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900">
-                        ₹{order.total.toLocaleString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                        {order.status.replace('_', ' ').toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPaymentStatusColor(order.paymentStatus)}`}>
-                        {order.paymentStatus.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setShowDetailsModal(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="View Details"
-                        >
-                          <FiEye className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setShowStatusModal(true);
-                          }}
-                          className="text-green-600 hover:text-green-900"
-                          title="Update Status"
-                        >
-                          <FiTruck className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setShowPaymentModal(true);
-                          }}
-                          className="text-purple-600 hover:text-purple-900"
-                          title="Update Payment"
-                        >
-                          <FiDollarSign className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Order #
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Customer
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Items
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Payment
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {orders.map((order) => (
+                    <tr key={order._id} className="hover:bg-gray-50">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-green-600">
+                          #{order.orderNumber}
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {order.shippingAddress?.firstName} {order.shippingAddress?.lastName}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {order.user?.email || order.shippingAddress?.email}
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {new Date(order.createdAt).toLocaleTimeString()}
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {order.items.length} items
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-bold text-gray-900">
+                          ₹{order.total.toLocaleString()}
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                          {order.status.replace('_', ' ').toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPaymentStatusColor(order.paymentStatus)}`}>
+                          {order.paymentStatus.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setShowDetailsModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="View Details"
+                          >
+                            <FiEye className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setShowStatusModal(true);
+                            }}
+                            className="text-green-600 hover:text-green-900"
+                            title="Update Status"
+                          >
+                            <FiTruck className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setShowPaymentModal(true);
+                            }}
+                            className="text-purple-600 hover:text-purple-900"
+                            title="Update Payment"
+                          >
+                            <FiDollarSign className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             {/* Pagination */}
             <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
@@ -421,9 +431,9 @@ const AdminOrders = () => {
 
       {/* Order Details Modal */}
       {showDetailsModal && selectedOrder && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b flex justify-between items-center">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="px-4 sm:px-6 py-4 border-b flex justify-between items-center">
               <h3 className="text-lg font-medium text-gray-900">
                 Order #{selectedOrder.orderNumber} - Details
               </h3>
@@ -434,8 +444,8 @@ const AdminOrders = () => {
                 ✕
               </button>
             </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {/* Order Summary */}
                 <div>
                   <h4 className="font-medium text-gray-900 mb-3">Order Summary</h4>
@@ -515,7 +525,7 @@ const AdminOrders = () => {
               {/* Order Items */}
               <div className="mt-6">
                 <h4 className="font-medium text-gray-900 mb-3">Order Items</h4>
-                <div className="bg-white border rounded">
+                <div className="bg-white border rounded overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -570,7 +580,7 @@ const AdminOrders = () => {
                 </div>
               </div>
             </div>
-            <div className="px-6 py-4 border-t flex justify-end">
+            <div className="px-4 sm:px-6 py-4 border-t flex justify-end">
               <button
                 onClick={() => setShowDetailsModal(false)}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
@@ -584,8 +594,8 @@ const AdminOrders = () => {
 
       {/* Update Status Modal */}
       {showStatusModal && selectedOrder && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
             <div className="px-6 py-4 border-b">
               <h3 className="text-lg font-medium text-gray-900">
                 Update Order Status
@@ -633,7 +643,7 @@ const AdminOrders = () => {
                 </div>
               </div>
               
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="mt-6 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
                 <button
                   onClick={() => setShowStatusModal(false)}
                   className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -659,8 +669,8 @@ const AdminOrders = () => {
 
       {/* Update Payment Modal */}
       {showPaymentModal && selectedOrder && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
             <div className="px-6 py-4 border-b">
               <h3 className="text-lg font-medium text-gray-900">
                 Update Payment Status
@@ -695,7 +705,7 @@ const AdminOrders = () => {
                 </div>
               </div>
               
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="mt-6 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
                 <button
                   onClick={() => setShowPaymentModal(false)}
                   className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"

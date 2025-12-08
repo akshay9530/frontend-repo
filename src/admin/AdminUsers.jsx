@@ -74,14 +74,20 @@ const AdminUsers = () => {
       const data = await response.json();
       
       if (data.success) {
-        fetchUsers(); // Refresh the list
-        alert('User deleted successfully');
+        fetchUsers();
+        if (window.confirm('User deleted successfully. Click OK to continue.')) {
+          // User clicked OK
+        }
       } else {
-        alert(data.message || 'Error deleting user');
+        if (window.confirm(data.message || 'Error deleting user. Click OK to acknowledge.')) {
+          // User acknowledged error
+        }
       }
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('Error deleting user');
+      if (window.confirm('Error deleting user. Click OK to acknowledge.')) {
+        // User acknowledged error
+      }
     }
   };
 
@@ -102,13 +108,17 @@ const AdminUsers = () => {
       const data = await response.json();
       
       if (data.success) {
-        fetchUsers(); // Refresh the list
+        fetchUsers();
       } else {
-        alert(data.message || 'Error updating user status');
+        if (window.confirm(data.message || 'Error updating user status. Click OK to acknowledge.')) {
+          // User acknowledged error
+        }
       }
     } catch (error) {
       console.error('Error updating user status:', error);
-      alert('Error updating user status');
+      if (window.confirm('Error updating user status. Click OK to acknowledge.')) {
+        // User acknowledged error
+      }
     }
   };
 
@@ -174,89 +184,91 @@ const AdminUsers = () => {
           </div>
         ) : (
           <>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Phone
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created At
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
-                  <tr key={user._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="shrink-0 h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
-                          <span className="text-gray-600 font-medium">
-                            {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-                          </span>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {user.firstName} {user.lastName}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            ID: {user._id.substring(0, 8)}...
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.phone || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() => handleStatusToggle(user._id, user.isActive)}
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer
-                          ${user.isActive ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}
-                      >
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleDeleteUser(user._id)}
-                        className="text-red-600 hover:text-red-900 ml-2"
-                        title="Delete User"
-                      >
-                        <FiTrash2 className="h-5 w-5" />
-                      </button>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Phone
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Created At
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {users.map((user) => (
+                    <tr key={user._id}>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="shrink-0 h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
+                            <span className="text-gray-600 font-medium">
+                              {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+                            </span>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {user.firstName} {user.lastName}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              ID: {user._id.substring(0, 8)}...
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.email}
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.phone || 'N/A'}
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                          ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleStatusToggle(user._id, user.isActive)}
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer
+                            ${user.isActive ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}
+                        >
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </button>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button
+                          onClick={() => handleDeleteUser(user._id)}
+                          className="text-red-600 hover:text-red-900 ml-2"
+                          title="Delete User"
+                        >
+                          <FiTrash2 className="h-5 w-5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             {/* Pagination */}
             <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
